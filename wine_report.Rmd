@@ -1,0 +1,241 @@
+---
+title: "Individual Assignment 2"
+author: "Esslam Mumen"
+date: '2022-06-16'
+output: html_document
+knit: (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "../"
+    )
+  })
+---
+
+```{r}
+# 1 - fixed acidity
+# 
+# 2 - volatile acidity
+# 
+# 3 - citric acid
+# 
+# 4 - residual sugar
+# 
+# 5 - chlorides
+# 
+# 6 - free sulfur dioxide
+# 
+# 7 - total sulfur dioxide
+# 
+# 8 - density
+# 
+# 9 - pH
+# 
+# 10 - sulphates
+# 
+# 11 - alcohol
+# 
+# Output variable (based on sensory data):
+# 
+# 12 - quality (score between 0 and 10)
+```
+
+```{r}
+#Purpose:
+
+##In this notebook, I am aiming to perform some exploratory data analysis on the quality of red wine, using its main features such as acidity, chloride, pH, density, etc. I will be using some of the main tools provided in R with its most commonly utilized packages for data analysis.
+
+library(tidyverse)
+library(janitor)
+library(psych)
+```
+
+```{r}
+library(here)
+i_am("individual-assignment-2-tudkf.Rproj")
+read.csv(here("data/winequality-red.csv"))
+```
+
+
+```{r}
+#First, let's import the data and clean its variable names.
+
+wine <- read.csv("winequality-red.csv")
+
+wine %>%
+  clean_names()
+
+make.names(names(wine))
+```
+
+```{r}
+#Now, let's obtain a basic summary of each column in the data using the summary function.
+#For a more detailed report, we can use the 'describe' function in the "psych" package.
+
+summary(wine)
+psych::describe(wine)
+glimpse(wine) #There are 12 columns and 1599 rows in this dataset.
+```
+
+```{r}
+#A histogram showing the frequency for each quality rating in the dataset
+
+
+hist(wine$quality, 
+     main = "Histogram of Quality", 
+     xlab = "Red Wine Quality Ratings",
+     ylab = "Frequency") #Most of the dataset contains quality ratings between 4
+#and 8
+
+```
+
+```{r}
+##Since the red wine in the dataset are categorized based on quality, let's find
+#out what differentiates wine quality.In other words, let's find out "what" 
+#makes a good or bad quality wine.
+
+#We can summarize each column depending on quality rating and then plot them.
+#Turning it into data frame helps in providing more control of the data and
+#plotting them.
+
+quality_pH_summary <- data.frame(wine %>%
+                                group_by(quality) %>%
+                                summarise(avg = mean(pH),
+                                          stdev = sd(pH),
+                                          min = min(pH),
+                                          max = max(pH),
+                                          range = diff(range(pH))))
+
+quality_pH_summary
+
+#Quality based on density
+quality_density_summary <- data.frame(wine %>%
+                                   group_by(quality) %>%
+                                   summarise(avg = mean(density),
+                                             stdev = sd(density),
+                                             min = min(density),
+                                             max = max(density),
+                                             range = diff(range(density))))
+
+quality_density_summary
+
+#Quality based on fixed acidity
+
+quality_fixed_acidity_summary <- data.frame(wine %>%
+                                        group_by(quality) %>%
+                                        summarise(avg = mean(`fixed acidity`),
+                                                  stdev = sd(`fixed acidity`),
+                                                  min = min(`fixed acidity`),
+                                                  max = max(`fixed acidity`),
+                                                  range = diff(range(`fixed acidity`))))
+quality_fixed_acidity_summary
+#Quality based on residual sugars
+
+quality_residual_sugars_summary <- data.frame(wine %>%
+                                              group_by(quality) %>%
+                                              summarise(avg = mean(`residual sugar`),
+                                                        stdev = sd(`residual sugar`),
+                                                        min = min(`residual sugar`),
+                                                        max = max(`residual sugar`),
+                                                        range = diff(range(`residual sugar`))))
+quality_residual_sugars_summary
+
+#Quality based on chlorides
+
+quality_chlorides_summary <- data.frame(wine %>%
+                                                group_by(quality) %>%
+                                                summarise(avg = mean(chlorides),
+                                                          stdev = sd(chlorides),
+                                                          min = min(chlorides),
+                                                          max = max(chlorides),
+                                                          range = diff(range(chlorides))))
+quality_chlorides_summary
+
+#Quality based on total sulfur dioxide
+
+quality_total_sulfur_dioxide_summary <- data.frame(wine %>%
+                                          group_by(quality) %>%
+                                          summarise(avg = mean(`total sulfur dioxide`),
+                                                    stdev = sd(`total sulfur dioxide`),
+                                                    min = min(`total sulfur dioxide`),
+                                                    max = max(`total sulfur dioxide`),
+                                                    range = diff(range(`total sulfur dioxide`))))
+quality_total_sulfur_dioxide_summary
+
+#Quality based on alcohol
+
+quality_alcohol_summary <- data.frame(wine %>%
+                                                     group_by(quality) %>%
+                                                     summarise(avg = mean(`total sulfur dioxide`),
+                                                               stdev = sd(`total sulfur dioxide`),
+                                                               min = min(`total sulfur dioxide`),
+                                                               max = max(`total sulfur dioxide`),
+                                                               range = diff(range(`total sulfur dioxide`))))
+quality_alcohol_summary
+```
+
+```{r}
+#To better determine whether lower pH contributes to a higher quality wine, let's
+#visualize it by plotting the mean pH for every quality point.
+
+plot(quality_pH_summary$quality, quality_pH_summary$avg,
+     main="Average pH for each Rating",
+     ylab="Average pH",
+     xlab="Quality Rating") #According to this plot, lower pH produces higher 
+#quality wine and vice versa.
+
+
+#Let's apply this method with some other variables
+
+plot(quality_density_summary$quality, quality_density_summary$avg,
+     main="Average Density for each Rating",
+     ylab="Average Density",
+     xlab="Quality Rating") # In general, the lower the density, the higher the
+#quality rating
+
+plot(quality_residual_sugars_summary$quality, quality_residual_sugars_summary$avg,
+     main="Average Amount of Residual Sugars for each Rating",
+     ylab="Average Residual Sugars",
+     xlab="Quality Rating")#There is no clear pattern here. The amount of residual
+#sugars generally does not affect the quality of red wine.
+
+plot(quality_fixed_acidity_summary$quality, quality_fixed_acidity_summary$avg,
+     main="Average Fixed Acidity for each Rating",
+     ylab="Average Fixed Acidity",
+     xlab="Quality Rating")#Red wine with low average fixed acidity yields 
+#better quality.
+
+plot(quality_chlorides_summary$quality, quality_chlorides_summary$avg,
+     main="Average Chloride Amount for each Rating",
+     ylab="Average Chloride",
+     xlab="Quality Rating")#Lower amounts of chloride yield better quality.
+
+plot(quality_total_sulfur_dioxide_summary$quality, quality_total_sulfur_dioxide_summary$avg,
+     main="Average Total Sulfur Dioxide for each Rating",
+     ylab="Average pH",
+     xlab="Quality Rating")
+
+plot(quality_alcohol_summary$quality, quality_alcohol_summary$avg,
+     main="Average Amount of Alcohol for each Rating",
+     ylab="Average Alcohol",
+     xlab="Quality Rating")#According to the plot, lower alcohol in wine makes
+#it better.
+```
+
+```{r}
+#Conclusion
+
+##Several components (variables) contribute to the quality of red wine. Those components include:
+
+##- pH: lower pH produces higher quality wine and vice versa.
+##- Density: The lower the density, the higher the quality rating.
+##- Average Fixed Acidity: Red wine with low average fixed acidity yields better quality.
+##- Chloride: Lower amounts of chloride yield better quality.
+##- Sulfur Dioxide
+
+##However, there are other components that do not show a clear pattern in the plots when it comes to the direct effect on the quality on red wine. Those components include residual sugars and alcohol.
+
+##It is worth noting that since there are no red wine samples that contain quality ratings less than 3 and quality ratings greater than 8, and due to the lack of data for red wine with quality ratings 4, 7, and 8, bias could result in the analysis of this data, and further collection of data using random sampling might be needed.
+
+##Moreover, additional data on sales and profits for the selling of red wine would be beneficial for making a predictive analysis for future opportunities in the red wine market.
+```
+
